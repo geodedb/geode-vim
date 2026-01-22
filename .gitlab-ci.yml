@@ -81,22 +81,29 @@ test-vim-loading:
       # Create a test GQL file
       echo "MATCH (n:Person) RETURN n.name" > /tmp/test.gql
 
-      # Create a test script that echoes status and exits cleanly
+      # Create a test script that properly loads the plugin
       cat > /tmp/test_load.vim << 'VIMEOF'
       set nocompatible
       set runtimepath+=.
+      filetype on
+      syntax on
       runtime ftdetect/gql.vim
-      runtime syntax/gql.vim
       edit /tmp/test.gql
+      " Re-detect filetype after loading the file
+      filetype detect
+      " Now set syntax based on filetype
+      if &filetype == 'gql'
+        set syntax=gql
+      endif
       if &filetype != 'gql'
-        echom "FAIL: filetype is not gql"
+        echom "FAIL: filetype is not gql, got: " . &filetype
         cquit! 1
       endif
       if !exists('b:current_syntax') || b:current_syntax != 'gql'
-        echom "FAIL: syntax not loaded"
+        echom "FAIL: syntax not loaded, b:current_syntax = " . (exists('b:current_syntax') ? b:current_syntax : 'undefined')
         cquit! 2
       endif
-      echom "SUCCESS: plugin loaded"
+      echom "SUCCESS: plugin loaded correctly"
       qall!
       VIMEOF
 
