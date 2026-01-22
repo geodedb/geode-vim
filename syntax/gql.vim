@@ -45,7 +45,11 @@ syn match gqlOperator "->\|<-\|=>"
 syn keyword gqlKeyword CALL CASE DELETE DETACH ELSE END EXPLAIN FILTER FINISH FOREACH FROM INSERT JOIN LET LIMIT LOAD MATCH MERGE OFFSET OTHERWISE PROFILE REMOVE REPLACE RETURN SCAN SELECT SET SHOW SKIP THEN UNWIND VALUE VALUES WHEN WHERE WITH
 
 " Boolean and logical keywords
-syn keyword gqlBoolean AND CONTAINS ENDS EXISTS FALSE IN IS LIKE NOT NULL OR STARTS TRUE UNKNOWN XOR
+" Note: 'CONTAINS' conflicts with vim syn keyword argument, use syn match
+syn keyword gqlBoolean ENDS EXISTS FALSE IN IS LIKE NULL OR STARTS TRUE UNKNOWN XOR
+syn match gqlBoolean "\<AND\>"
+syn match gqlBoolean "\<NOT\>"
+syn match gqlBoolean "\<CONTAINS\>"
 
 " DDL keywords
 syn keyword gqlDDL ASSERT CONSTRAINT CREATE DROP GRAPH INDEX KEY PROPERTY REQUIRE SCHEMA TABLE
@@ -60,7 +64,11 @@ syn keyword gqlKeyword ACYCLIC AGGREGATE ALL ANY AS ASC AVG BINDING BINDINGS BY 
 syn keyword gqlAggregate count sum avg min max collect
 
 " Scalar functions
-syn keyword gqlFunction abs ceil floor round sqrt rand sign exp log log10 sin cos tan asin acos atan atan2 pi e degrees radians size length substring replace toLower toUpper trim lTrim rTrim left right split startsWith endsWith contains head last tail reverse range toInteger toFloat toString toBoolean timestamp date time datetime duration id type labels properties keys nodes relationships shortestPath allShortestPaths vectorf32 vectori32 vector_l2 vector_cosine vector_dot distance similarity cosine euclidean manhattan all any none single coalesce nullIf indegree outdegree
+" Note: 'contains' conflicts with vim syn keyword argument, use syn match
+syn keyword gqlFunction abs ceil floor round sqrt rand sign exp log log10 sin cos tan asin acos atan atan2 pi e degrees radians size length substring replace toLower toUpper trim lTrim rTrim left right split startsWith endsWith head last tail reverse range toInteger toFloat toString toBoolean timestamp date time datetime duration id type labels properties keys nodes relationships shortestPath allShortestPaths vectorf32 vectori32 vector_l2 vector_cosine vector_dot distance similarity cosine euclidean manhattan none single coalesce nullIf indegree outdegree
+syn match gqlFunction "\<contains\>"
+syn match gqlFunction "\<all\>"
+syn match gqlFunction "\<any\>"
 
 " Data types
 syn keyword gqlType INTEGER FLOAT STRING BOOLEAN DATE TIME DATETIME DURATION POINT VECTOR UUID BYTES JSON LIST MAP NODE RELATIONSHIP PATH GRAPH ANY
