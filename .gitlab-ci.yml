@@ -81,7 +81,7 @@ test-vim-loading:
       # Create a test GQL file
       echo "MATCH (n:Person) RETURN n.name" > /tmp/test.gql
 
-      # Create a test script
+      # Create a test script that echoes status and exits cleanly
       cat > /tmp/test_load.vim << 'VIMEOF'
       set nocompatible
       set runtimepath+=.
@@ -89,19 +89,29 @@ test-vim-loading:
       runtime syntax/gql.vim
       edit /tmp/test.gql
       if &filetype != 'gql'
-        cquit 1
+        echom "FAIL: filetype is not gql"
+        cquit! 1
       endif
       if !exists('b:current_syntax') || b:current_syntax != 'gql'
-        cquit 2
+        echom "FAIL: syntax not loaded"
+        cquit! 2
       endif
+      echom "SUCCESS: plugin loaded"
       qall!
       VIMEOF
 
-      # Test that the plugin loads without errors
-      vim -N -u NONE -S /tmp/test_load.vim 2>&1 || {
-        echo "Vim plugin loading test failed"
+      # Test that the plugin loads - capture exit code properly
+      set +e
+      vim -N -u NONE -S /tmp/test_load.vim > /tmp/vim_output.txt 2>&1
+      exit_code=$?
+      set -e
+
+      cat /tmp/vim_output.txt || true
+
+      if [ $exit_code -ne 0 ]; then
+        echo "Vim plugin loading test failed with exit code $exit_code"
         exit 1
-      }
+      fi
 
       echo "Vim plugin loads correctly!"
   rules:
@@ -153,16 +163,25 @@ test-syntax-coverage:
       runtime syntax/gql.vim
       edit /tmp/test_coverage.gql
       if &filetype != 'gql'
-        cquit 1
+        echom "FAIL: filetype not set"
+        cquit! 1
       endif
+      echom "SUCCESS: coverage test passed"
       qall!
       VIMEOF
 
       # Verify the file can be opened and syntax applied
-      vim -N -u NONE -S /tmp/test_coverage.vim 2>&1 || {
-        echo "Syntax coverage test failed"
+      set +e
+      vim -N -u NONE -S /tmp/test_coverage.vim > /tmp/vim_output.txt 2>&1
+      exit_code=$?
+      set -e
+
+      cat /tmp/vim_output.txt || true
+
+      if [ $exit_code -ne 0 ]; then
+        echo "Syntax coverage test failed with exit code $exit_code"
         exit 1
-      }
+      fi
 
       echo "Syntax highlighting coverage test passed!"
   rules:
