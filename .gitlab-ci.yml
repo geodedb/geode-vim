@@ -1,6 +1,42 @@
+include:
+  # Security scanning
+  - component: gitlab.com/devnw/ci-catalog/security-sast@latest
+    inputs:
+      stage: security
+
+  - component: gitlab.com/devnw/ci-catalog/security-dependency-scanning@latest
+    inputs:
+      stage: security
+
+  - component: gitlab.com/devnw/ci-catalog/security-secrets@latest
+    inputs:
+      stage: security
+
+  - component: gitlab.com/devnw/ci-catalog/security-gitleaks@latest
+
+  # SBOM generation and scanning
+  - component: gitlab.com/devnw/ci-catalog/sbom-generate@latest
+
+  - component: gitlab.com/devnw/ci-catalog/sbom-scan@latest
+    inputs:
+      allow_failure: true
+
+  # Release creation
+  - component: gitlab.com/devnw/ci-catalog/release-semantic@latest
+    inputs:
+      stage: release
+
+default:
+  tags:
+    - company
+    - linux
+
 stages:
   - validate
   - test
+  - security
+  - sbom
+  - release
 
 variables:
   GIT_DEPTH: 1
