@@ -1,0 +1,21 @@
+# Vim swap and backup files
+*.swp
+*.swo
+*~
+*.un~
+
+# Tags
+tags
+tags.lock
+
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
