@@ -15,9 +15,10 @@ set cpo&vim
 syn case ignore
 
 " Comments
+" keepend prevents unbounded regions from causing DoS (CWE-400 mitigation)
 syn match gqlComment "--.*$" contains=gqlTodo
 syn match gqlComment "//.*$" contains=gqlTodo
-syn region gqlComment start="/\*" end="\*/" contains=gqlTodo
+syn region gqlComment start="/\*" end="\*/" contains=gqlTodo keepend
 syn keyword gqlTodo contained TODO FIXME XXX NOTE HACK BUG
 
 " Strings

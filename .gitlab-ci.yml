@@ -66,29 +66,23 @@ validate-vimscript:
   stage: validate
   image: alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
   before_script:
-    - apk add --no-cache vim=9.0.2127-r0 grep=3.11-r0
+    - apk add --no-cache vim=9.0.2127-r0 grep=3.11-r0 python3=3.11.10-r0 py3-pip=23.3.1-r0
+    - pip3 install --no-cache-dir vim-vint==0.3.21 --break-system-packages
   script:
     - |
       echo "Validating Vimscript files..."
 
-      # Check for common vimscript errors
-      # Using find -print0 | while read to safely handle filenames with special characters
       errors=0
       error_marker="$(mktemp)"
       trap 'rm -f "$error_marker"' EXIT
 
-      # First pass: syntax checks
+      # First pass: Run vint linter for proper Vimscript validation
+      echo "Running vint linter..."
       find . -name "*.vim" -type f -print0 | while IFS= read -r -d '' file; do
-        echo "Checking $file..."
-
-        # Check for mismatched quotes
-        if grep -nE "^[^\"]*'[^'\"]*$" "$file" 2>/dev/null | grep -v "\""; then
-          echo "Warning: Possible unclosed single quote in $file"
-        fi
-
-        # Check for mismatched parens in obvious cases
-        if grep -nE "^[^\"]*\([^)\"]*$" "$file" 2>/dev/null | head -5; then
-          echo "Note: Line may have unclosed paren in $file (may be multi-line)"
+        echo "Linting $file with vint..."
+        if ! vint "$file"; then
+          echo "ERROR: vint found issues in $file"
+          echo "1" > "$error_marker"
         fi
       done
 
@@ -101,6 +95,47 @@ validate-vimscript:
         fi
       done
 
+      # Third pass: Static analysis for dangerous Vimscript functions (CWE-94 mitigation)
+      # Check for functions that could lead to RCE, injection, or data tampering
+      echo "Checking for dangerous Vimscript functions..."
+      find . -name "*.vim" -type f -print0 | while IFS= read -r -d '' file; do
+        # system() - executes shell commands (RCE risk)
+        if grep -nE '\bsystem\s*\(' "$file" 2>/dev/null; then
+          echo "ERROR: Dangerous function 'system()' found in $file"
+          echo "1" > "$error_marker"
+        fi
+
+        # execute() - executes arbitrary Vimscript (injection risk)
+        if grep -nE '\bexecute\s*\(' "$file" 2>/dev/null; then
+          echo "ERROR: Dangerous function 'execute()' found in $file"
+          echo "1" > "$error_marker"
+        fi
+
+        # eval function - evaluates expressions (injection risk)
+        if grep -nE '\beval\s*\(' "$file" 2>/dev/null; then
+          echo "ERROR: Dangerous function found in $file"
+          echo "1" > "$error_marker"
+        fi
+
+        # writefile() - writes to filesystem (data tampering risk)
+        if grep -nE '\bwritefile\s*\(' "$file" 2>/dev/null; then
+          echo "ERROR: Dangerous function 'writefile()' found in $file"
+          echo "1" > "$error_marker"
+        fi
+
+        # delete() - deletes files (data tampering risk)
+        if grep -nE '\bdelete\s*\(' "$file" 2>/dev/null; then
+          echo "ERROR: Dangerous function 'delete()' found in $file"
+          echo "1" > "$error_marker"
+        fi
+
+        # job_start() - starts background jobs (RCE risk)
+        if grep -nE '\bjob_start\s*\(' "$file" 2>/dev/null; then
+          echo "ERROR: Dangerous function 'job_start()' found in $file"
+          echo "1" > "$error_marker"
+        fi
+      done
+
       # Check if any errors were recorded
       if [ -s "$error_marker" ]; then
         errors=1
@@ -109,7 +144,7 @@ validate-vimscript:
       if [ $errors -eq 1 ]; then
         exit 1
       fi
-      echo "Vimscript validation complete!"
+      echo "Vimscript validation complete - no dangerous functions detected!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -130,6 +165,9 @@ validate-structure:
       test -f "syntax/gql.vim" || { echo "Missing syntax/gql.vim"; exit 1; }
       test -f "ftdetect/gql.vim" || { echo "Missing ftdetect/gql.vim"; exit 1; }
       test -f "language_metadata.zig" || { echo "Missing language_metadata.zig"; exit 1; }
+      test -f "tools/generate_vim_syntax.zig" || { echo "Missing tools/generate_vim_syntax.zig"; exit 1; }
+      test -f "tools/Makefile" || { echo "Missing tools/Makefile"; exit 1; }
+      test -f "tools/README.md" || { echo "Missing tools/README.md"; exit 1; }
 
       echo "Plugin structure is valid!"
   rules:
