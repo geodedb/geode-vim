@@ -42,5 +42,5 @@ reported by contacting the project maintainers or [Benji Vesterby](https://githu
 directly via email [benji@devnw.com](mailto:benji@devnw.com).
 
 This Code of Conduct is adapted from the Contributor Covenant
-(<http://contributor-covenant.org>), version 1.2.0, available at
-<http://contributor-covenant.org/version/1/2/0/>
+(<https://www.contributor-covenant.org>), version 1.2.0, available at
+<https://www.contributor-covenant.org/version/1/2/0/>

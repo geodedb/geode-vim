@@ -12,7 +12,13 @@ description = "Global allowlist"
 paths = [
   '''testdata''',
   '''tests/.*''',
-  '''.*\.vim$''',
-  '''.*\.md$''',
   '''.*\.log$''',
 ]
+# NOTE: Removed broad exclusions for .vim and .md files to ensure secrets are detected.
+# If false positives occur, use specific regex-based allowlist rules below instead.
+
+# Example allowlist for known false positive patterns (placeholder keys in docs):
+# [[rules.allowlist]]
+# description = "Example placeholder API keys in documentation"
+# regexes = ['''YOUR_API_KEY_HERE''', '''EXAMPLE_.*_KEY''', '''<your-.*-here>''']
+# paths = ['''README\.md$''', '''docs/.*\.md$''']

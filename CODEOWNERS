@@ -6,6 +6,7 @@
 *       @maintainers
 
 # Security-sensitive files require security team review
-SECURITY.md         @security-team @maintainers
-.gitlab-ci.yml      @security-team @maintainers
-.gitleaks.toml      @security-team @maintainers
+SECURITY.md             @security-team @maintainers
+.gitlab-ci.yml          @security-team @maintainers
+.gitleaks.toml          @security-team @maintainers
+.pre-commit-config.yaml @security-team @maintainers
