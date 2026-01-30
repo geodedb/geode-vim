@@ -1,28 +1,28 @@
 include:
   # Security scanning
-  # NOTE: Component versions pinned for supply chain security (was @latest).
+  # NOTE: Component versions pinned to immutable commit SHAs for supply chain security.
   # Verify versions in gitlab.com/devnw/ci-catalog and update as needed.
-  - component: gitlab.com/devnw/ci-catalog/security-sast@v1.0.0
+  - component: gitlab.com/devnw/ci-catalog/security-sast@1e0be8e792274924d1326f9c0e35a298e5fca1a5
     inputs:
       stage: security
 
-  - component: gitlab.com/devnw/ci-catalog/security-dependency-scanning@v1.0.0
+  - component: gitlab.com/devnw/ci-catalog/security-dependency-scanning@1e0be8e792274924d1326f9c0e35a298e5fca1a5
     inputs:
       stage: security
 
-  - component: gitlab.com/devnw/ci-catalog/security-secrets@v1.0.0
+  - component: gitlab.com/devnw/ci-catalog/security-secrets@1e0be8e792274924d1326f9c0e35a298e5fca1a5
     inputs:
       stage: security
 
-  - component: gitlab.com/devnw/ci-catalog/security-gitleaks@v1.0.0
+  - component: gitlab.com/devnw/ci-catalog/security-gitleaks@1e0be8e792274924d1326f9c0e35a298e5fca1a5
 
   # SBOM generation and scanning
-  - component: gitlab.com/devnw/ci-catalog/sbom-generate@v1.0.0
+  - component: gitlab.com/devnw/ci-catalog/sbom-generate@1e0be8e792274924d1326f9c0e35a298e5fca1a5
 
-  - component: gitlab.com/devnw/ci-catalog/sbom-scan@v1.0.0
+  - component: gitlab.com/devnw/ci-catalog/sbom-scan@1e0be8e792274924d1326f9c0e35a298e5fca1a5
 
   # Release creation
-  - component: gitlab.com/devnw/ci-catalog/release-semantic@v1.0.0
+  - component: gitlab.com/devnw/ci-catalog/release-semantic@1e0be8e792274924d1326f9c0e35a298e5fca1a5
     inputs:
       stage: release
 
@@ -58,14 +58,15 @@ stages:
   - release
 
 variables:
-  GIT_DEPTH: 1
+  # Full history enables security scanners to detect historical secrets.
+  GIT_DEPTH: 0
 
 # Validate Vimscript syntax - check for basic vimscript errors
 validate-vimscript:
   stage: validate
-  image: alpine:3.19
+  image: alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
   before_script:
-    - apk add --no-cache vim grep
+    - apk add --no-cache vim=9.0.2127-r0 grep=3.11-r0
   script:
     - |
       echo "Validating Vimscript files..."
@@ -73,6 +74,8 @@ validate-vimscript:
       # Check for common vimscript errors
       # Using find -print0 | while read to safely handle filenames with special characters
       errors=0
+      error_marker="$(mktemp)"
+      trap 'rm -f "$error_marker"' EXIT
 
       # First pass: syntax checks
       find . -name "*.vim" -type f -print0 | while IFS= read -r -d '' file; do
@@ -94,14 +97,13 @@ validate-vimscript:
         if [ ! -s "$file" ]; then
           echo "Error: $file is empty"
           # Write to temp file since subshell can't modify parent errors variable
-          echo "1" > /tmp/vim_errors
+          echo "1" > "$error_marker"
         fi
       done
 
       # Check if any errors were recorded
-      if [ -f /tmp/vim_errors ]; then
+      if [ -s "$error_marker" ]; then
         errors=1
-        rm -f /tmp/vim_errors
       fi
 
       if [ $errors -eq 1 ]; then
@@ -115,7 +117,7 @@ validate-vimscript:
 # Validate plugin structure
 validate-structure:
   stage: validate
-  image: alpine:3.19
+  image: alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
   script:
     - |
       echo "Validating plugin structure..."
@@ -127,8 +129,53 @@ validate-structure:
       # Required files
       test -f "syntax/gql.vim" || { echo "Missing syntax/gql.vim"; exit 1; }
       test -f "ftdetect/gql.vim" || { echo "Missing ftdetect/gql.vim"; exit 1; }
+      test -f "language_metadata.zig" || { echo "Missing language_metadata.zig"; exit 1; }
 
       echo "Plugin structure is valid!"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Validate security configuration baselines
+validate-security-config:
+  stage: validate
+  image: alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+  before_script:
+    - apk add --no-cache grep=3.11-r0
+  script:
+    - |
+      set -e
+      echo "Validating security configuration..."
+
+      # Ensure gitleaks does not skip tests/testdata paths
+      if grep -nE "tests/\\.|testdata" .gitleaks.toml; then
+        echo "Error: gitleaks allowlist includes broad test paths"
+        exit 1
+      fi
+
+      # Ensure gitleaks does not skip log files
+      if grep -nE "^[^#]*\\.log\\$" .gitleaks.toml; then
+        echo "Error: gitleaks allowlist includes *.log files"
+        exit 1
+      fi
+
+      # Ensure apk installs are pinned to versions
+      if ! grep -nE "apk add --no-cache vim=9\\.0\\.2127-r0 grep=3\\.11-r0" .gitlab-ci.yml >/dev/null; then
+        echo "Error: vim/grep apk versions are not pinned"
+        exit 1
+      fi
+
+      if [ "$(grep -cE "apk add --no-cache vim=9\\.0\\.2127-r0" .gitlab-ci.yml)" -lt 3 ]; then
+        echo "Error: expected pinned vim installs in CI jobs"
+        exit 1
+      fi
+
+      if [ "$(grep -cE "grep=3\\.11-r0" .gitlab-ci.yml)" -lt 2 ]; then
+        echo "Error: expected pinned grep installs in CI jobs"
+        exit 1
+      fi
+
+      echo "Security configuration validation complete!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -136,24 +183,30 @@ validate-structure:
 # Test syntax highlighting loads in Vim
 test-vim-loading:
   stage: test
-  image: alpine:3.19
+  image: alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
   before_script:
-    - apk add --no-cache vim
+    - apk add --no-cache vim=9.0.2127-r0
   script:
     - |
       echo "Testing Vim plugin loading..."
 
+      tmp_dir="$(mktemp -d)"
+      trap 'rm -rf "$tmp_dir"' EXIT
+      test_gql="$tmp_dir/test.gql"
+      test_vim="$tmp_dir/test_load.vim"
+      vim_output="$tmp_dir/vim_output.txt"
+
       # Create a test GQL file
-      echo "MATCH (n:Person) RETURN n.name" > /tmp/test.gql
+      echo "MATCH (n:Person) RETURN n.name" > "$test_gql"
 
       # Create a test script that properly loads the plugin
-      cat > /tmp/test_load.vim << 'VIMEOF'
+      cat > "$test_vim" << 'VIMEOF'
       set nocompatible
       set runtimepath+=.
       filetype on
       syntax on
       runtime ftdetect/gql.vim
-      edit /tmp/test.gql
+      edit PLACEHOLDER_TEST_FILE
       " Re-detect filetype after loading the file
       filetype detect
       " Now set syntax based on filetype
@@ -172,13 +225,15 @@ test-vim-loading:
       qall!
       VIMEOF
 
+      sed -i "s|PLACEHOLDER_TEST_FILE|$test_gql|g" "$test_vim"
+
       # Test that the plugin loads - capture exit code properly
       set +e
-      vim -N -u NONE -S /tmp/test_load.vim > /tmp/vim_output.txt 2>&1
+      vim -N -u NONE -S "$test_vim" > "$vim_output" 2>&1
       exit_code=$?
       set -e
 
-      cat /tmp/vim_output.txt || true
+      cat "$vim_output" || true
 
       if [ $exit_code -ne 0 ]; then
         echo "Vim plugin loading test failed with exit code $exit_code"
@@ -193,15 +248,21 @@ test-vim-loading:
 # Test syntax highlighting coverage
 test-syntax-coverage:
   stage: test
-  image: alpine:3.19
+  image: alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
   before_script:
-    - apk add --no-cache vim
+    - apk add --no-cache vim=9.0.2127-r0
   script:
     - |
       echo "Testing syntax highlighting coverage..."
 
+      tmp_dir="$(mktemp -d)"
+      trap 'rm -rf "$tmp_dir"' EXIT
+      test_gql="$tmp_dir/test_coverage.gql"
+      test_vim="$tmp_dir/test_coverage.vim"
+      vim_output="$tmp_dir/vim_output.txt"
+
       # Create a comprehensive test file
-      cat > /tmp/test_coverage.gql << 'EOF'
+      cat > "$test_gql" << 'EOF'
       -- This is a comment
       // Another comment
       /* Multi-line
@@ -228,12 +289,12 @@ test-syntax-coverage:
       EOF
 
       # Create a test script
-      cat > /tmp/test_coverage.vim << 'VIMEOF'
+      cat > "$test_vim" << 'VIMEOF'
       set nocompatible
       set runtimepath+=.
       runtime ftdetect/gql.vim
       runtime syntax/gql.vim
-      edit /tmp/test_coverage.gql
+      edit PLACEHOLDER_TEST_FILE
       if &filetype != 'gql'
         echom "FAIL: filetype not set"
         cquit! 1
@@ -242,13 +303,15 @@ test-syntax-coverage:
       qall!
       VIMEOF
 
+      sed -i "s|PLACEHOLDER_TEST_FILE|$test_gql|g" "$test_vim"
+
       # Verify the file can be opened and syntax applied
       set +e
-      vim -N -u NONE -S /tmp/test_coverage.vim > /tmp/vim_output.txt 2>&1
+      vim -N -u NONE -S "$test_vim" > "$vim_output" 2>&1
       exit_code=$?
       set -e
 
-      cat /tmp/vim_output.txt || true
+      cat "$vim_output" || true
 
       if [ $exit_code -ne 0 ]; then
         echo "Syntax coverage test failed with exit code $exit_code"
