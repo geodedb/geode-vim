@@ -66,7 +66,7 @@ validate-vimscript:
   stage: validate
   image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
   before_script:
-    - apk add --no-cache vim=9.0.2127-r0 grep=3.11-r0 python3=3.11.10-r0 py3-pip=23.3.1-r0
+    - apk add --no-cache vim=9.2.0854-r0 grep=3.12-r0 python3=3.14.7-r1 py3-pip=26.1.2-r0
     - pip3 install --no-cache-dir vim-vint==0.3.21 --break-system-packages
   script:
     - |
@@ -179,7 +179,7 @@ validate-security-config:
   stage: validate
   image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
   before_script:
-    - apk add --no-cache grep=3.11-r0
+    - apk add --no-cache grep=3.12-r0
   script:
     - |
       set -e
@@ -198,17 +198,17 @@ validate-security-config:
       fi
 
       # Ensure apk installs are pinned to versions
-      if ! grep -nE "apk add --no-cache vim=9\\.0\\.2127-r0 grep=3\\.11-r0" .gitlab-ci.yml >/dev/null; then
+      if ! grep -nE "apk add --no-cache vim=9\\.2\\.0854-r0 grep=3\\.12-r0" .gitlab-ci.yml >/dev/null; then
         echo "Error: vim/grep apk versions are not pinned"
         exit 1
       fi
 
-      if [ "$(grep -cE "apk add --no-cache vim=9\\.0\\.2127-r0" .gitlab-ci.yml)" -lt 3 ]; then
+      if [ "$(grep -cE "apk add --no-cache vim=9\\.2\\.0854-r0" .gitlab-ci.yml)" -lt 3 ]; then
         echo "Error: expected pinned vim installs in CI jobs"
         exit 1
       fi
 
-      if [ "$(grep -cE "grep=3\\.11-r0" .gitlab-ci.yml)" -lt 2 ]; then
+      if [ "$(grep -cE "grep=3\\.12-r0" .gitlab-ci.yml)" -lt 2 ]; then
         echo "Error: expected pinned grep installs in CI jobs"
         exit 1
       fi
@@ -223,7 +223,7 @@ test-vim-loading:
   stage: test
   image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
   before_script:
-    - apk add --no-cache vim=9.0.2127-r0
+    - apk add --no-cache vim=9.2.0854-r0
   script:
     - |
       echo "Testing Vim plugin loading..."
@@ -288,7 +288,7 @@ test-syntax-coverage:
   stage: test
   image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
   before_script:
-    - apk add --no-cache vim=9.0.2127-r0
+    - apk add --no-cache vim=9.2.0854-r0
   script:
     - |
       echo "Testing syntax highlighting coverage..."
