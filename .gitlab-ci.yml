@@ -70,7 +70,7 @@ validate-vimscript:
   stage: validate
   image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
   before_script:
-    - apk add --no-cache vim=9.2.0854-r0 grep=3.12-r0 python3=3.14.7-r1 py3-pip=26.1.2-r0
+    - apk add --no-cache vim=9.2.0854-r0 grep=3.12-r0 python3=3.14.7-r1 py3-pip=26.1.2-r0 py3-setuptools=82.0.1-r1
     - pip3 install --no-cache-dir vim-vint==0.3.21 --break-system-packages
   script:
     - |
