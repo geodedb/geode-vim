@@ -73,7 +73,7 @@ validate-vimscript:
     - apk add --no-cache vim=9.2.0854-r0 grep=3.12-r0 python3=3.14.7-r1 py3-pip=26.1.2-r0
     # vint 0.3.21 imports pkg_resources, which setuptools >=81 removed
     # (and python 3.14 no longer bundles); pin the last line that has it.
-    - pip3 install --no-cache-dir vim-vint==0.3.21 'setuptools<81' --break-system-packages
+    - pip3 install --no-cache-dir vim-vint==0.3.21 setuptools==80.9.0 --break-system-packages
   script:
     - |
       echo "Validating Vimscript files..."
