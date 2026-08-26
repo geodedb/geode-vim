@@ -59,7 +59,7 @@ fn generateSyntaxFile(allocator: std.mem.Allocator) !void {
     try writer.writeAll(
         \\" Generated from language_metadata.zig - DO NOT EDIT MANUALLY
         \\"
-        \\if exists("b:current_syntax")
+        \\if exists('b:current_syntax')
         \\  finish
         \\endif
         \\
@@ -145,7 +145,7 @@ fn generateSyntaxFile(allocator: std.mem.Allocator) !void {
         \\hi def link gqlFunction Function
         \\hi def link gqlType Type
         \\
-        \\let b:current_syntax = "gql"
+        \\let b:current_syntax = 'gql'
         \\
         \\let &cpo = s:cpo_save
         \\unlet s:cpo_save
@@ -169,8 +169,11 @@ fn generateFtdetectFile(allocator: std.mem.Allocator) !void {
         \\" Maintainer: Geode Team
         \\" Generated from language_metadata.zig
         \\
-        \\autocmd BufRead,BufNewFile *.gql set filetype=gql
-        \\autocmd BufRead,BufNewFile *.geode set filetype=gql
+        \\augroup gql_ftdetect
+        \\  autocmd!
+        \\  autocmd BufRead,BufNewFile *.gql set filetype=gql
+        \\  autocmd BufRead,BufNewFile *.geode set filetype=gql
+        \\augroup END
         \\
     );
 

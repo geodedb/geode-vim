@@ -4,7 +4,7 @@
 " Latest Revision: 2026-01-03
 " Generated from language_metadata.zig - DO NOT EDIT MANUALLY
 
-if exists("b:current_syntax")
+if exists('b:current_syntax')
   finish
 endif
 
@@ -90,7 +90,7 @@ hi def link gqlAggregate Function
 hi def link gqlFunction Function
 hi def link gqlType Type
 
-let b:current_syntax = "gql"
+let b:current_syntax = 'gql'
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
