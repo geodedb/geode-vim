@@ -7,10 +7,9 @@ title = "Gitleaks Configuration"
 [extend]
 useDefault = true
 
-[allowlist]
-description = "Global allowlist"
-paths = []
-# NOTE: Avoid broad path allowlists. Use specific regex-based allowlist rules below instead.
+# NOTE: No global allowlist. Newer gitleaks rejects an allowlist block
+# with no checks ("[[allowlists]] must contain at least one check"), so
+# add one only together with concrete regexes/paths.
 
 # Example allowlist for known false positive patterns (placeholder keys in docs):
 # [[rules.allowlist]]
