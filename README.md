@@ -11,21 +11,27 @@ Vim plugin providing syntax highlighting and filetype detection for Geode's GQL 
 ## Supported Keywords
 
 ### Query Clauses
+
 `MATCH`, `OPTIONAL`, `WHERE`, `RETURN`, `WITH`, `ORDER BY`, `SKIP`, `LIMIT`, `UNION`, `INTERSECT`, `EXCEPT`, `UNWIND`, `CALL`, `YIELD`
 
 ### Data Modification
+
 `CREATE`, `MERGE`, `DELETE`, `DETACH DELETE`, `SET`, `REMOVE`, `INSERT`
 
 ### DDL
+
 `CREATE GRAPH`, `DROP GRAPH`, `CREATE INDEX`, `DROP INDEX`, `CONSTRAINT`, `SCHEMA`
 
 ### Transactions
+
 `BEGIN`, `COMMIT`, `ROLLBACK`, `TRANSACTION`
 
 ### Data Types
+
 `INTEGER`, `FLOAT`, `STRING`, `BOOLEAN`, `DATE`, `TIME`, `DATETIME`, `DURATION`, `POINT`, `VECTOR`, `UUID`, `BYTES`, `JSON`, `LIST`, `MAP`
 
 ### Functions
+
 - **Aggregation**: `count`, `sum`, `avg`, `min`, `max`, `collect`
 - **Scalar**: `length`, `size`, `head`, `tail`, `last`, `reverse`, `range`
 - **Math**: `abs`, `ceil`, `floor`, `round`, `sqrt`, `rand`, `exp`, `log`
@@ -81,12 +87,12 @@ To manually set the filetype:
 
 | Extension | Filetype |
 |-----------|----------|
-| `.gql` | gql |
-| `.geode` | gql |
+| `.gql`    | gql      |
+| `.geode`  | gql      |
 
 ## Plugin Structure
 
-```
+```text
 geode-vim/
 ├── ftdetect/
 │   └── gql.vim       # Filetype detection
@@ -99,7 +105,7 @@ geode-vim/
 ## Highlighting Groups
 
 | Group | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `gqlKeyword` | Query clauses and keywords |
 | `gqlBoolean` | Boolean and logical operators |
 | `gqlDDL` | Data definition keywords |
