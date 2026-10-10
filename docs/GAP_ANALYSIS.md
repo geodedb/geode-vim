@@ -8,12 +8,12 @@ Reviewer: Adversarial security code review agent
 ## Summary
 
 | Severity | Count | Open | Closed |
-|----------|-------|------|--------|
+| ---------- | ------- | ------ | -------- |
 | Critical | 0 | 0 | 0 |
-| High     | 2 | 0 | 2 |
-| Medium   | 7 | 0 | 7 |
-| Low      | 11 | 0 | 11 |
-| Info     | 3 | 0 | 3 |
+| High | 2 | 0 | 2 |
+| Medium | 7 | 0 | 7 |
+| Low | 11 | 0 | 11 |
+| Info | 3 | 0 | 3 |
 | **Total** | **23** | **0** | **23** |
 
 Top 5 risks (open):
@@ -23,7 +23,7 @@ Top 5 risks (open):
 ## Stack-ranked findings
 
 | Rank | Severity | RiskScore | Finding | Component | CWE/OWASP | Evidence (file:line) | GitLab Issue | Fix Summary | Owner | SLA/Due | Status |
-|------|----------|-----------|---------|-----------|-----------|----------------------|--------------|-------------|-------|---------|--------|
+| ------ | ---------- | ----------- | --------- | ----------- | ----------- | ---------------------- | -------------- | ------------- | ------- | --------- | -------- |
 | 1 | High | 48 | Unpinned CI component references using @latest (confidence::confirmed) | CI/CD | CWE-829, A08:2021 | `.gitlab-ci.yml:5-25` | [#1](https://gitlab.com/devnw/codepros/geode/geode-vim/-/issues/1) | Pinned to v1.0.0 | N/A | Closed | CLOSED |
 | 2 | High | 32 | Gitleaks allowlist excluded .vim/.md (confidence::confirmed) | Secret Detection | CWE-798, A05:2021 | `.gitleaks.toml:10-18` | [#2](https://gitlab.com/devnw/codepros/geode/geode-vim/-/issues/2) | Removed exclusions | N/A | Closed | CLOSED |
 | 3 | Medium | 36 | SBOM scan allowed failure (confidence::confirmed) | CI/CD | CWE-1104, A06:2021 | `.gitlab-ci.yml:20-22` | [#3](https://gitlab.com/devnw/codepros/geode/geode-vim/-/issues/3) | Removed allow_failure | N/A | Closed | CLOSED |

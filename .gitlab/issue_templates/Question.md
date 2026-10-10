@@ -8,11 +8,13 @@
 <!-- Describe what you've already attempted -->
 
 ## Code Example
+
 ```vim
 " Relevant code if applicable
 ```
 
 ## Environment
+
 - **Vim Version**:
 - **Plugin Version**:
 
