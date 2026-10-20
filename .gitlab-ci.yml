@@ -1,28 +1,28 @@
 include:
   # Security scanning
-  # NOTE: Component versions pinned to immutable commit SHAs for supply chain security.
-  # Verify versions in gitlab.com/devnw/ci-catalog and update as needed.
-  - component: gitlab.com/devnw/ci-catalog/security-sast@1.55
+  # NOTE: Components are pinned to full ci-catalog release tags (SRE-172); a
+  # partial ref like @1.55 floats to whatever patch is newest. Bump deliberately.
+  - component: gitlab.com/devnw/ci-catalog/security-sast@v1.57.0
     inputs:
       stage: security
 
-  - component: gitlab.com/devnw/ci-catalog/security-dependency-scanning@1.55
+  - component: gitlab.com/devnw/ci-catalog/security-dependency-scanning@v1.57.0
     inputs:
       stage: security
 
-  - component: gitlab.com/devnw/ci-catalog/security-secrets@1.55
+  - component: gitlab.com/devnw/ci-catalog/security-secrets@v1.57.0
     inputs:
       stage: security
 
-  - component: gitlab.com/devnw/ci-catalog/security-gitleaks@1.55
+  - component: gitlab.com/devnw/ci-catalog/security-gitleaks@v1.57.0
 
   # SBOM generation and scanning
-  - component: gitlab.com/devnw/ci-catalog/sbom-generate@1.55
+  - component: gitlab.com/devnw/ci-catalog/sbom-generate@v1.57.0
 
-  - component: gitlab.com/devnw/ci-catalog/sbom-scan@1.55
+  - component: gitlab.com/devnw/ci-catalog/sbom-scan@v1.57.0
 
   # Release creation
-  - component: gitlab.com/devnw/ci-catalog/release-semantic@1.55
+  - component: gitlab.com/devnw/ci-catalog/release-semantic@v1.57.0
     inputs:
       stage: release
 
@@ -31,6 +31,10 @@ include:
 # - Auto-run for MRs from same project (not forks)
 # - Require manual trigger for MRs from forks
 workflow:
+  # SRE-172: a newer commit on the same ref cancels the superseded pipeline's
+  # interruptible jobs. create-release (release-semantic) is non-interruptible.
+  auto_cancel:
+    on_new_commit: interruptible
   rules:
     # Run on default branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -50,6 +54,9 @@ workflow:
     - if: $CI_COMMIT_TAG
 
 default:
+  # Every local job here is read-only validation/test work, safe to cancel
+  # when superseded. Component side-effect jobs set interruptible: false.
+  interruptible: true
   tags:
     - company
     - linux
@@ -70,7 +77,7 @@ validate-vimscript:
   stage: validate
   image: alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
   before_script:
-    - apk add --no-cache vim=9.2.1091-r0 grep=3.12-r0 python3=3.14.8-r0 py3-pip=26.1.2-r0
+    - apk add --no-cache vim=9.2.1202-r0 grep=3.12-r0 python3=3.14.8-r0 py3-pip=26.1.2-r0
     # vint 0.3.21 imports pkg_resources, which setuptools >=81 removed
     # (and python 3.14 no longer bundles); pin the last line that has it.
     - pip3 install --no-cache-dir vim-vint==0.3.21 setuptools==80.9.0 --break-system-packages
@@ -204,12 +211,12 @@ validate-security-config:
       fi
 
       # Ensure apk installs are pinned to versions
-      if ! grep -nE "apk add --no-cache vim=9\\.2\\.1091-r0 grep=3\\.12-r0" .gitlab-ci.yml >/dev/null; then
+      if ! grep -nE "apk add --no-cache vim=9\\.2\\.1202-r0 grep=3\\.12-r0" .gitlab-ci.yml >/dev/null; then
         echo "Error: vim/grep apk versions are not pinned"
         exit 1
       fi
 
-      if [ "$(grep -cE "apk add --no-cache vim=9\\.2\\.1091-r0" .gitlab-ci.yml)" -lt 3 ]; then
+      if [ "$(grep -cE "apk add --no-cache vim=9\\.2\\.1202-r0" .gitlab-ci.yml)" -lt 3 ]; then
         echo "Error: expected pinned vim installs in CI jobs"
         exit 1
       fi
@@ -229,7 +236,7 @@ test-vim-loading:
   stage: test
   image: alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
   before_script:
-    - apk add --no-cache vim=9.2.1091-r0
+    - apk add --no-cache vim=9.2.1202-r0
   script:
     - |
       echo "Testing Vim plugin loading..."
@@ -294,7 +301,7 @@ test-syntax-coverage:
   stage: test
   image: alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
   before_script:
-    - apk add --no-cache vim=9.2.1091-r0
+    - apk add --no-cache vim=9.2.1202-r0
   script:
     - |
       echo "Testing syntax highlighting coverage..."
