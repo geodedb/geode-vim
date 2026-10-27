@@ -22,6 +22,7 @@ workflow:
   # SRE-172: a newer commit on the same ref cancels the superseded pipeline's
   # interruptible jobs. create-release (release-semantic) is non-interruptible.
   auto_cancel:
+    on_job_failure: all
     on_new_commit: interruptible
   rules:
     # Run on default branch
