@@ -18,6 +18,7 @@ include:
   # Release creation
   - component: gitlab.com/devnw/ci-catalog/release-semantic@aad997d40e358eeef7ec943f761498341c37c724
     inputs:
+      release_auth: job_token
       stage: release
       tags: [company, dedicated, linux, x86]
 
@@ -75,7 +76,7 @@ validate-vimscript:
   stage: validate
   image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
   before_script:
-    - apk add --no-cache vim=9.2.1202-r0 grep=3.12-r0 python3=3.14.10-r1 py3-pip=26.1.2-r0
+    - apk add --no-cache vim=9.2.1310-r0 grep=3.12-r0 python3=3.14.10-r1 py3-pip=26.1.2-r0
     # vint 0.3.21 imports pkg_resources, which setuptools >=81 removed
     # (and python 3.14 no longer bundles); pin the last line that has it.
     - pip3 install --no-cache-dir vim-vint==0.3.21 setuptools==80.9.0 --break-system-packages
@@ -209,12 +210,12 @@ validate-security-config:
       fi
 
       # Ensure apk installs are pinned to versions
-      if ! grep -nE "apk add --no-cache vim=9\\.2\\.1202-r0 grep=3\\.12-r0" .gitlab-ci.yml >/dev/null; then
+      if ! grep -nE "apk add --no-cache vim=9\\.2\\.1310-r0 grep=3\\.12-r0" .gitlab-ci.yml >/dev/null; then
         echo "Error: vim/grep apk versions are not pinned"
         exit 1
       fi
 
-      if [ "$(grep -cE "apk add --no-cache vim=9\\.2\\.1202-r0" .gitlab-ci.yml)" -lt 3 ]; then
+      if [ "$(grep -cE "apk add --no-cache vim=9\\.2\\.1310-r0" .gitlab-ci.yml)" -lt 3 ]; then
         echo "Error: expected pinned vim installs in CI jobs"
         exit 1
       fi
@@ -234,7 +235,7 @@ test-vim-loading:
   stage: test
   image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
   before_script:
-    - apk add --no-cache vim=9.2.1202-r0
+    - apk add --no-cache vim=9.2.1310-r0
   script:
     - |
       echo "Testing Vim plugin loading..."
@@ -299,7 +300,7 @@ test-syntax-coverage:
   stage: test
   image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
   before_script:
-    - apk add --no-cache vim=9.2.1202-r0
+    - apk add --no-cache vim=9.2.1310-r0
   script:
     - |
       echo "Testing syntax highlighting coverage..."
