@@ -74,7 +74,7 @@ variables:
 # Validate Vimscript syntax - check for basic vimscript errors
 validate-vimscript:
   stage: validate
-  image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+  image: alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
   before_script:
     - apk add --no-cache vim=9.2.1310-r0 grep=3.12-r0 python3=3.14.10-r1 py3-pip=26.1.2-r0
     # vint 0.3.21 imports pkg_resources, which setuptools >=81 removed
@@ -164,7 +164,7 @@ validate-vimscript:
 # Validate plugin structure
 validate-structure:
   stage: validate
-  image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+  image: alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
   script:
     - |
       echo "Validating plugin structure..."
@@ -189,7 +189,7 @@ validate-structure:
 # Validate security configuration baselines
 validate-security-config:
   stage: validate
-  image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+  image: alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
   before_script:
     - apk add --no-cache grep=3.12-r0
   script:
@@ -233,7 +233,7 @@ validate-security-config:
 # Test syntax highlighting loads in Vim
 test-vim-loading:
   stage: test
-  image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+  image: alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
   before_script:
     - apk add --no-cache vim=9.2.1310-r0
   script:
@@ -298,7 +298,7 @@ test-vim-loading:
 # Test syntax highlighting coverage
 test-syntax-coverage:
   stage: test
-  image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+  image: alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
   before_script:
     - apk add --no-cache vim=9.2.1310-r0
   script:
